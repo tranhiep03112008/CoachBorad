@@ -283,7 +283,7 @@ function renderInfo() {
   } else if (k === 'b') {
     el.innerHTML = `<b>Ball</b><span class="spacer"></span><button class="btn small" data-act="rm">Remove</button>`;
   } else {
-    el.textContent = ui.tool === 'move' ? 'Drag players to move them. Drop a player on another to swap. Select a player for details.' :
+    el.textContent = ui.tool === 'move' ? 'Drag players to move them. Drop a player on another to swap. Select a player for details. Double-tap empty field to go back one step.' :
       ui.tool === 'erase' ? 'Click a drawing to erase it.' : ui.tool === 'text' ? 'Click on the pitch to place a label.' : 'Drag on the pitch to draw.';
   }
 }
@@ -451,7 +451,17 @@ function onBoardDown(e) {
   if (ui.playing || e.button !== 0) return;
   if (ui.tool === 'move') {
     const g = e.target.closest('[data-k]');
-    if (g) startTokenDrag(e, g.dataset.k); else { ui.sel = null; renderBoard(); renderInfo(); }
+    if (g) startTokenDrag(e, g.dataset.k);
+    else {
+      const now = performance.now(), last = onBoardDown.last;
+      if (last && now - last.t < 380 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 30) {
+        onBoardDown.last = null;
+        if (ui.undo.length) { undo(); toast('Went back one step'); } else toast('Nothing to go back to');
+        return;
+      }
+      onBoardDown.last = { t: now, x: e.clientX, y: e.clientY };
+      ui.sel = null; renderBoard(); renderInfo();
+    }
   } else if (ui.tool === 'erase') {
     const d = e.target.closest('.draw'); if (d) mutate((p, f) => f.draws.splice(+d.dataset.i, 1));
   } else if (ui.tool === 'text') {
