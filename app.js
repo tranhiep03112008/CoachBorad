@@ -471,25 +471,30 @@ function onBoardDown(e) {
   } else startDraw(e);
 }
 
-/* Two-finger double-tap on the board → undo
-   We track native touchstart events (higher fidelity than pointer for multi-touch).
-   Two fingers down twice within 500 ms triggers undo. */
-function initTwoFingerDoubleTap(el) {
+/* Two-finger double-tap anywhere on screen → undo.
+   - Uses native touchstart (higher fidelity for multi-touch than pointer events).
+   - Two fingers placed twice within 500 ms = undo.
+   - Works on iPad even when the board SVG consumes pointer events.
+   - Calling e.preventDefault() on the second tap also blocks any residual zoom. */
+function initTwoFingerDoubleTap() {
   let last = 0;
-  el.addEventListener('touchstart', e => {
-    if (ui.playing) return;
+  document.addEventListener('touchstart', e => {
+    if (ui.playing || ui.view !== 'board') return;
     if (e.touches.length === 2) {
       const now = performance.now();
       if (now - last < 500) {
-        e.preventDefault();
+        // Second two-finger tap within window → undo
+        e.preventDefault();          // block any zoom the browser might attempt
         last = 0;
         if (ui.undo.length) { undo(); toast('↶ Went back one step'); }
-        else toast('Nothing to go back to');
+        else { toast('Nothing to go back to'); }
       } else {
+        // First two-finger tap — start the window
         last = now;
       }
-    } else {
-      last = 0; // reset if single finger or 3+
+    } else if (e.touches.length !== 2) {
+      // Any other touch count resets the window
+      last = 0;
     }
   }, { passive: false });
 }
@@ -606,7 +611,7 @@ function init() {
 
   // board
   boardEl().addEventListener('pointerdown', onBoardDown);
-  initTwoFingerDoubleTap(boardEl());
+  initTwoFingerDoubleTap();
 
   // Drawing tools and colour swatches live inside .controlrow now
   $('.controlrow').addEventListener('click', e => {
