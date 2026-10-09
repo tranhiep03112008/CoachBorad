@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>LineupLab – Tactics board &amp; lineup manager</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<!-- ───────── top bar ───────── -->
 <header class="topbar">
   <div class="brand"><span class="logo" aria-hidden="true">◐</span><strong id="brandName">LineupLab</strong></div>
   <nav class="tabs" aria-label="Views">
@@ -16,106 +21,125 @@
     <button class="tab" data-view="playbook">Playbook</button>
   </nav>
   <div class="top-actions">
-    <label class="sr">Sport</label>
     <select id="sportSel" aria-label="Sport"></select>
-    <button id="btnTeam" class="btn ghost">⚙ Team</button>
+    <button id="btnTeam" class="btn ghost icon-btn" aria-label="Team settings">⚙<span class="btn-label"> Team</span></button>
   </div>
 </header>
 
 <main>
-  <!-- ============ BOARD ============ -->
+  <!-- ═══════════ BOARD VIEW ═══════════ -->
   <section id="view-board" class="view">
-    <aside class="side">
-      <div class="card">
-        <h3>Formation</h3>
-        <select id="fmSel" aria-label="Formation"></select>
-        <div class="row">
-          <button id="btnFmKeep" class="btn" title="Re-arrange players on pitch into this shape, filling gaps from the bench">Apply</button>
-          <button id="btnFmAuto" class="btn primary" title="Pick the best available players by rating for each slot">Auto best lineup</button>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Opponent</h3>
-        <div class="row">
-          <button id="btnOppFm" class="btn" title="Place an opposing team using the selected formation, mirrored">Place with formation</button>
-          <button id="btnOppAdd" class="btn">+1</button>
-          <button id="btnOppClear" class="btn ghost">Clear</button>
-        </div>
-        <div class="row">
-          <button id="btnBall" class="btn">⚽ Toggle ball</button>
-        </div>
-      </div>
-      <div class="card grow">
-        <h3>Bench <span id="benchCount" class="muted"></span></h3>
-        <p class="hint">Drag onto the pitch, tap to add, or drop on a player to substitute. Drag a token here to bench it.</p>
-        <div id="bench" class="bench" aria-label="Bench players"></div>
-      </div>
-    </aside>
 
-    <div class="stage">
-      <div class="playbar">
-        <input id="playName" aria-label="Play name" maxlength="60">
-        <div id="lineupStats" class="stats"></div>
-        <div class="spacer"></div>
-        <button id="btnUndo" class="btn" title="Undo (Ctrl/⌘+Z)">↶</button>
-        <button id="btnRedo" class="btn" title="Redo (Ctrl/⌘+Shift+Z)">↷</button>
-        <button id="btnNames" class="btn" aria-pressed="true" title="Show player names">Names</button>
-        <button id="btnCopy" class="btn" title="Copy lineup as text">Copy lineup</button>
-        <button id="btnPng" class="btn" title="Download image">PNG</button>
-      </div>
-
-      <div class="toolbar" role="toolbar" aria-label="Drawing tools">
-        <button class="tool" data-tool="move" title="Move players (V)">✥ Move</button>
-        <button class="tool" data-tool="pass" title="Pass arrow">➜ Pass</button>
-        <button class="tool" data-tool="run" title="Run (dashed arrow)">⇢ Run</button>
-        <button class="tool" data-tool="curve" title="Freehand arrow">↝ Curve</button>
-        <button class="tool" data-tool="pen" title="Freehand pen">✎ Pen</button>
-        <button class="tool" data-tool="zone" title="Highlight zone">◯ Zone</button>
-        <button class="tool" data-tool="text" title="Text label">T Text</button>
-        <button class="tool" data-tool="erase" title="Erase a drawing">⌫ Erase</button>
-        <span class="sep"></span>
-        <div id="colors" class="colors" role="radiogroup" aria-label="Drawing colour"></div>
-        <span class="sep"></span>
-        <button id="btnClearDraw" class="btn ghost">Clear drawings</button>
-      </div>
-
-      <div class="boardwrap">
-        <svg id="board" xmlns="http://www.w3.org/2000/svg" data-tool="move" role="img" aria-label="Tactics board"></svg>
-      </div>
-
-      <div id="infoBar" class="infobar" aria-live="polite"></div>
-
-      <div class="frames">
-        <span class="muted">Steps</span>
-        <div id="frameBtns" class="frame-btns"></div>
-        <button id="btnAddFrame" class="btn" title="Duplicate current step as next step">+ Step</button>
-        <button id="btnDelFrame" class="btn ghost">Delete step</button>
-        <span class="sep"></span>
-        <button id="btnPlay" class="btn primary">▶ Play</button>
-        <label class="chk"><input type="checkbox" id="chkLoop"> Loop</label>
-        <select id="speedSel" aria-label="Speed">
-          <option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option>
-        </select>
-      </div>
+    <!-- ── row 1: play name + quick actions ── -->
+    <div class="playbar">
+      <input id="playName" aria-label="Play name" maxlength="60" placeholder="Play name…">
+      <div id="lineupStats" class="stats"></div>
+      <div class="spacer"></div>
+      <button id="btnUndo"  class="btn icon-btn" title="Undo (Ctrl/⌘+Z)">↶</button>
+      <button id="btnRedo"  class="btn icon-btn" title="Redo">↷</button>
+      <button id="btnNames" class="btn icon-btn" aria-pressed="true" title="Toggle names">Aa</button>
+      <button id="btnCopy"  class="btn icon-btn" title="Copy lineup">⎘</button>
+      <button id="btnPng"   class="btn icon-btn" title="Download PNG">↓PNG</button>
     </div>
-  </section>
 
-  <!-- ============ ROSTER ============ -->
+    <!-- ── row 2: drawing toolbar + side controls ── -->
+    <div class="controlrow">
+
+      <!-- drawing tools (left-aligned) -->
+      <div class="toolbar" role="toolbar" aria-label="Drawing tools">
+        <button class="tool" data-tool="move"  title="Move (V)">✥</button>
+        <button class="tool" data-tool="pass"  title="Pass arrow">➜</button>
+        <button class="tool" data-tool="run"   title="Run">⇢</button>
+        <button class="tool" data-tool="curve" title="Curve">↝</button>
+        <button class="tool" data-tool="pen"   title="Pen">✎</button>
+        <button class="tool" data-tool="zone"  title="Zone">◯</button>
+        <button class="tool" data-tool="text"  title="Text">T</button>
+        <button class="tool" data-tool="erase" title="Erase">⌫</button>
+        <span class="sep"></span>
+        <div id="colors" class="colors" role="radiogroup" aria-label="Colour"></div>
+        <span class="sep"></span>
+        <button id="btnClearDraw" class="btn ghost" title="Clear all drawings">✕ drawings</button>
+      </div>
+
+      <!-- formation panel (right side of row) -->
+      <div class="sidetabs">
+        <!-- FORMATION -->
+        <div class="sidecard">
+          <span class="sidelabel">Formation</span>
+          <select id="fmSel" aria-label="Formation"></select>
+          <button id="btnFmKeep" class="btn" title="Re-arrange existing players into this formation">Apply</button>
+          <button id="btnFmAuto" class="btn primary" title="Auto-fill best players">Auto</button>
+        </div>
+
+        <span class="sep"></span>
+
+        <!-- OPPONENT -->
+        <div class="sidecard">
+          <span class="sidelabel">Opponent</span>
+          <button id="btnOppFm"    class="btn" title="Place opponent in mirrored formation">Place</button>
+          <button id="btnOppAdd"   class="btn">+1</button>
+          <button id="btnOppClear" class="btn ghost">Clear</button>
+          <button id="btnBall"     class="btn" title="Toggle ball">⚽</button>
+        </div>
+
+        <span class="sep"></span>
+
+        <!-- BENCH toggle -->
+        <button id="btnBenchToggle" class="btn" aria-expanded="false" aria-controls="benchDrawer">
+          Bench <span id="benchCount" class="muted"></span> ▾
+        </button>
+      </div>
+    </div><!-- /controlrow -->
+
+    <!-- ── Bench drawer (slides open below toolbar row) ── -->
+    <div id="benchDrawer" class="bench-drawer" aria-hidden="true">
+      <p class="hint">Drag onto pitch · tap to add · drop on a player to substitute · drag back here to bench</p>
+      <div id="bench" class="bench" aria-label="Bench players"></div>
+    </div>
+
+    <!-- ── board ── -->
+    <div class="boardwrap">
+      <svg id="board" xmlns="http://www.w3.org/2000/svg" data-tool="move"
+           role="img" aria-label="Tactics board"></svg>
+    </div>
+
+    <!-- ── info bar ── -->
+    <div id="infoBar" class="infobar" aria-live="polite"></div>
+
+    <!-- ── steps / animation bar ── -->
+    <div class="frames">
+      <span class="muted">Steps</span>
+      <div id="frameBtns" class="frame-btns"></div>
+      <button id="btnAddFrame" class="btn" title="Duplicate step">+ Step</button>
+      <button id="btnDelFrame" class="btn ghost">Del step</button>
+      <span class="sep"></span>
+      <button id="btnPlay" class="btn primary">▶ Play</button>
+      <label class="chk"><input type="checkbox" id="chkLoop"> Loop</label>
+      <select id="speedSel" aria-label="Speed">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+      </select>
+    </div>
+
+  </section><!-- /view-board -->
+
+  <!-- ═══════════ ROSTER VIEW ═══════════ -->
   <section id="view-roster" class="view" hidden>
     <div class="panel">
       <div class="panel-head">
         <h2>Roster <span id="rosterSport" class="muted"></span></h2>
         <div id="rosterStats" class="stats"></div>
         <div class="spacer"></div>
-        <input id="rSearch" type="search" placeholder="Search name / number…" aria-label="Search players">
+        <input id="rSearch" type="search" placeholder="Search…" aria-label="Search players">
         <select id="rSort" aria-label="Sort">
-          <option value="num">Sort: number</option>
+          <option value="num">Sort: #</option>
           <option value="name">Sort: name</option>
-          <option value="pos">Sort: position</option>
+          <option value="pos">Sort: pos</option>
           <option value="rating">Sort: rating</option>
         </select>
-        <button id="btnAddPlayer" class="btn primary">+ Add player</button>
-        <button id="btnSample" class="btn">Load sample squad</button>
+        <button id="btnAddPlayer"   class="btn primary">+ Player</button>
+        <button id="btnSample"      class="btn">Sample squad</button>
         <button id="btnClearRoster" class="btn ghost">Clear</button>
       </div>
       <div class="tablewrap">
@@ -128,22 +152,23 @@
     </div>
   </section>
 
-  <!-- ============ PLAYBOOK ============ -->
+  <!-- ═══════════ PLAYBOOK VIEW ═══════════ -->
   <section id="view-playbook" class="view" hidden>
     <div class="panel">
       <div class="panel-head">
         <h2>Playbook</h2>
         <div class="spacer"></div>
         <select id="pbFilter" aria-label="Filter by sport"></select>
-        <button id="btnNewPlay" class="btn primary">+ New play</button>
-        <button id="btnImportPlay" class="btn">Import play</button>
+        <button id="btnNewPlay"    class="btn primary">+ New play</button>
+        <button id="btnImportPlay" class="btn">Import</button>
       </div>
       <div id="playGrid" class="play-grid"></div>
     </div>
   </section>
-</main>
 
-<!-- Player dialog -->
+</main><!-- /main -->
+
+<!-- ─── Player dialog ─── -->
 <dialog id="playerDlg">
   <form method="dialog" id="playerForm">
     <h3 id="playerDlgTitle">Player</h3>
@@ -154,12 +179,14 @@
       <label>Rating (1–99) <input name="rating" type="number" min="1" max="99" value="70" required></label>
       <label>Status
         <select name="status">
-          <option value="ok">Available</option><option value="doubtful">Doubtful</option>
-          <option value="injured">Injured</option><option value="suspended">Suspended</option>
+          <option value="ok">Available</option>
+          <option value="doubtful">Doubtful</option>
+          <option value="injured">Injured</option>
+          <option value="suspended">Suspended</option>
         </select>
       </label>
     </div>
-    <label>Notes <textarea name="notes" rows="3" maxlength="300" placeholder="Strengths, set pieces, fitness…"></textarea></label>
+    <label>Notes <textarea name="notes" rows="3" maxlength="300" placeholder="Strengths, fitness…"></textarea></label>
     <div class="dlg-actions">
       <button value="cancel" formnovalidate class="btn ghost">Cancel</button>
       <button value="ok" class="btn primary">Save</button>
@@ -167,21 +194,21 @@
   </form>
 </dialog>
 
-<!-- Team dialog -->
+<!-- ─── Team dialog ─── -->
 <dialog id="teamDlg">
   <form method="dialog" id="teamForm">
     <h3>Team settings</h3>
     <label>Team name <input name="name" required maxlength="40"></label>
     <div class="grid2">
-      <label>Shirt colour <input name="color" type="color"></label>
+      <label>Shirt colour  <input name="color"  type="color"></label>
       <label>Number colour <input name="color2" type="color"></label>
-      <label>Opponent colour <input name="opp" type="color"></label>
+      <label>Opponent colour <input name="opp"  type="color"></label>
     </div>
     <h4>Data</h4>
     <div class="row">
-      <button type="button" id="btnExportAll" class="btn">Export everything</button>
-      <button type="button" id="btnImportAll" class="btn">Import everything</button>
-      <button type="button" id="btnReset" class="btn danger">Reset app</button>
+      <button type="button" id="btnExportAll" class="btn">Export backup</button>
+      <button type="button" id="btnImportAll" class="btn">Import backup</button>
+      <button type="button" id="btnReset"     class="btn danger">Reset app</button>
     </div>
     <p class="hint">All data is stored locally in your browser.</p>
     <div class="dlg-actions">
