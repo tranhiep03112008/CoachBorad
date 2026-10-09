@@ -1,4 +1,10 @@
+/* =====================================================================
+   LineupLab — styles.css
+   Layout: topbar → board view fills remaining viewport height (flex column)
+   Touch-first: 44 px tap targets, pointer events on SVG, no hover-only UI
+===================================================================== */
 
+/* ─── tokens ─────────────────────────────────────────────────────── */
 :root {
   --bg:      #0e1116;
   --panel:   #171b23;
@@ -21,6 +27,9 @@ html, body {
   height: 100%;
   /* prevent iOS overscroll rubber-banding from moving the board */
   overscroll-behavior: none;
+  /* suppress double-tap zoom everywhere EXCEPT the board (which uses touch-action:none)
+     while keeping two-finger pinch-to-zoom working */
+  touch-action: manipulation;
 }
 body {
   margin: 0;
