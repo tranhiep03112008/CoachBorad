@@ -257,7 +257,15 @@ function renderBoard(view) {
 function renderBench() {
   const p = play(), f = frameOf(p), ro = rosterOf();
   const bench = ro.filter(x => !f.pos[x.id]).sort((a, b) => a.num - b.num);
-  $('#benchCount').textContent = `(${bench.length})`;
+  const countTxt = `(${bench.length})`;
+  // Update all benchCount spans (there may be one in the drawer heading and one in the toggle button)
+  $$('#benchCount').forEach(el => el.textContent = countTxt);
+  // Keep toggle button label fresh
+  const btn = $('#btnBenchToggle');
+  if (btn) {
+    const open = $('#benchDrawer').classList.contains('open');
+    btn.innerHTML = `Bench <span id="benchCount" class="muted">${countTxt}</span> ${open ? '▴' : '▾'}`;
+  }
   $('#bench').innerHTML = bench.map(pl => {
     const c = tokColors(pl, SP()), na = unavailable(pl);
     return `<div class="chip${na ? ' na' : ''}" data-id="${pl.id}" title="${na ? esc(pl.status) + ' – unavailable' : 'Drag to pitch'}">
@@ -397,7 +405,7 @@ function startTokenDrag(e, k) {
 
 /* drag from bench */
 function startBenchDrag(e, id) {
-  const pl = player(id); if (!pl || e.button !== 0) return;
+  const pl = player(id); if (!pl) return;
   if (unavailable(pl)) { toast(`${pl.name} is ${pl.status}.`); return; }
   const chip = e.target.closest('.chip'), sx = e.clientX, sy = e.clientY; let ghost = null;
   const move = ev => {
@@ -448,26 +456,42 @@ function startDraw(e) {
 }
 
 function onBoardDown(e) {
-  if (ui.playing || e.button !== 0) return;
+  if (ui.playing) return;
+  // Ignore right / middle mouse clicks but allow all touch-driven pointer events
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
   if (ui.tool === 'move') {
     const g = e.target.closest('[data-k]');
     if (g) startTokenDrag(e, g.dataset.k);
-    else {
-      const now = performance.now(), last = onBoardDown.last;
-      if (last && now - last.t < 380 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 30) {
-        onBoardDown.last = null;
-        if (ui.undo.length) { undo(); toast('Went back one step'); } else toast('Nothing to go back to');
-        return;
-      }
-      onBoardDown.last = { t: now, x: e.clientX, y: e.clientY };
-      ui.sel = null; renderBoard(); renderInfo();
-    }
+    else { ui.sel = null; renderBoard(); renderInfo(); }
   } else if (ui.tool === 'erase') {
     const d = e.target.closest('.draw'); if (d) mutate((p, f) => f.draws.splice(+d.dataset.i, 1));
   } else if (ui.tool === 'text') {
     e.preventDefault(); const pt = toNorm(e), s = prompt('Label text:');
     if (s && s.trim()) mutate((p, f) => f.draws.push({ t: 'text', p: pt, s: s.trim().slice(0, 40), c: ui.color }));
   } else startDraw(e);
+}
+
+/* Two-finger double-tap on the board → undo
+   We track native touchstart events (higher fidelity than pointer for multi-touch).
+   Two fingers down twice within 500 ms triggers undo. */
+function initTwoFingerDoubleTap(el) {
+  let last = 0;
+  el.addEventListener('touchstart', e => {
+    if (ui.playing) return;
+    if (e.touches.length === 2) {
+      const now = performance.now();
+      if (now - last < 500) {
+        e.preventDefault();
+        last = 0;
+        if (ui.undo.length) { undo(); toast('↶ Went back one step'); }
+        else toast('Nothing to go back to');
+      } else {
+        last = now;
+      }
+    } else {
+      last = 0; // reset if single finger or 3+
+    }
+  }, { passive: false });
 }
 
 /* -------------------------------------------------------------- animation */
@@ -582,11 +606,25 @@ function init() {
 
   // board
   boardEl().addEventListener('pointerdown', onBoardDown);
-  $('.toolbar').addEventListener('click', e => {
+  initTwoFingerDoubleTap(boardEl());
+
+  // Drawing tools and colour swatches live inside .controlrow now
+  $('.controlrow').addEventListener('click', e => {
     const t = e.target.closest('.tool'); if (t) { ui.tool = t.dataset.tool; ui.sel = null; renderBoard(); renderToolbar(); renderInfo(); }
     const s = e.target.closest('.swatch'); if (s) { ui.color = s.dataset.c; renderToolbar(); }
   });
   $('#btnClearDraw').onclick = () => { if (frameOf(play()).draws.length) mutate((p, f) => { f.draws = []; }); };
+
+  // Bench drawer toggle
+  $('#btnBenchToggle').addEventListener('click', () => {
+    const drawer = $('#benchDrawer'), btn = $('#btnBenchToggle');
+    const open = !drawer.classList.contains('open');
+    drawer.classList.toggle('open', open);
+    drawer.setAttribute('aria-hidden', String(!open));
+    btn.setAttribute('aria-expanded', String(open));
+    btn.innerHTML = `Bench <span id="benchCount" class="muted">${$('#benchCount')?.textContent || ''}</span> ${open ? '▴' : '▾'}`;
+  });
+
   $('#playName').addEventListener('input', e => { play().name = e.target.value; play().updated = Date.now(); save(); });
   $('#btnUndo').onclick = undo; $('#btnRedo').onclick = redo;
   $('#btnNames').onclick = () => { ui.names = !ui.names; renderBoardView(); };
